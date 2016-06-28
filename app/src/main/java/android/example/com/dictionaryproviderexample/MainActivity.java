@@ -18,9 +18,12 @@ package android.example.com.dictionaryproviderexample;
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.provider.UserDictionary;
+import android.provider.ContactsContract;
 import android.provider.UserDictionary.Words;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
+import android.widget.ListView;
+import android.support.v4.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
 /**
@@ -28,6 +31,14 @@ import android.widget.TextView;
  * to show an example of accessing the {@link Words} list via its' Content Provider.
  */
 public class MainActivity extends ActionBarActivity {
+
+    private final String[] COLUMN_NAMES = new String[] {
+            ContactsContract.Contacts.DISPLAY_NAME,
+            ContactsContract.Contacts.TIMES_CONTACTED};
+
+    private final int[] COLUMN_INTS = new int[] {
+            android.R.id.text1,
+            android.R.id.text2};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +51,46 @@ public class MainActivity extends ActionBarActivity {
         // Get the ContentResolver which will send a message to the ContentProvider
         ContentResolver resolver = getContentResolver();
 
+        Log.d("test", ContactsContract.Contacts.CONTENT_URI.toString());
+
         // Get a Cursor containing all of the rows in the Words table
-        Cursor cursor = resolver.query(UserDictionary.Words.CONTENT_URI, null, null, null, null);
+        String orderBy = ContactsContract.Contacts.TIMES_CONTACTED + " DESC";
+        Cursor cursor = resolver.query(ContactsContract.Contacts.CONTENT_URI,
+                null, null, null, orderBy);
+
+/*        SimpleCursorAdapter adapter = new SimpleCursorAdapter(
+                this,
+                android.R.layout.two_line_list_item,
+                cursor,
+                COLUMN_NAMES,
+                COLUMN_INTS,
+                0);*/
+
+        String toPrint = null;
+
+        try {
+
+            int count = cursor.getCount();
+            toPrint = "There are " + String.valueOf(count) + " contacts in your device. \n";
+
+            while (cursor.moveToNext()) {
+                int idCol = cursor.getColumnIndex(ContactsContract.Contacts._ID);
+                int timesCol = cursor.getColumnIndex(ContactsContract.Contacts.TIMES_CONTACTED);
+                int nameCol = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
+
+                toPrint = toPrint + cursor.getString(idCol) + " - ";
+                toPrint = toPrint + cursor.getString(timesCol) + " - ";
+                toPrint = toPrint + cursor.getString(nameCol) + "\n";
+            }
+
+            dictTextView.setText(toPrint);
+            cursor.close();
+
+        } catch (NullPointerException e) {
+            Log.e(NullPointerException.class.getName(), e.toString());
+        } finally {
+            cursor.close();
+        }
+
     }
 }
