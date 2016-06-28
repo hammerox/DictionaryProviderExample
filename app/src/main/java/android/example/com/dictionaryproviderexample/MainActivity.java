@@ -46,7 +46,7 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
 
         // Get the TextView which will be populated with the Dictionary ContentProvider data.
-        TextView dictTextView = (TextView) findViewById(R.id.dictionary_text_view);
+        ListView dictTextView = (ListView) findViewById(R.id.dictionary_text_view);
 
         // Get the ContentResolver which will send a message to the ContentProvider
         ContentResolver resolver = getContentResolver();
@@ -58,39 +58,14 @@ public class MainActivity extends ActionBarActivity {
         Cursor cursor = resolver.query(ContactsContract.Contacts.CONTENT_URI,
                 null, null, null, orderBy);
 
-/*        SimpleCursorAdapter adapter = new SimpleCursorAdapter(
+        SimpleCursorAdapter adapter = new SimpleCursorAdapter(
                 this,
                 android.R.layout.two_line_list_item,
                 cursor,
                 COLUMN_NAMES,
                 COLUMN_INTS,
-                0);*/
+                0);
 
-        String toPrint = null;
-
-        try {
-
-            int count = cursor.getCount();
-            toPrint = "There are " + String.valueOf(count) + " contacts in your device. \n";
-
-            while (cursor.moveToNext()) {
-                int idCol = cursor.getColumnIndex(ContactsContract.Contacts._ID);
-                int timesCol = cursor.getColumnIndex(ContactsContract.Contacts.TIMES_CONTACTED);
-                int nameCol = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
-
-                toPrint = toPrint + cursor.getString(idCol) + " - ";
-                toPrint = toPrint + cursor.getString(timesCol) + " - ";
-                toPrint = toPrint + cursor.getString(nameCol) + "\n";
-            }
-
-            dictTextView.setText(toPrint);
-            cursor.close();
-
-        } catch (NullPointerException e) {
-            Log.e(NullPointerException.class.getName(), e.toString());
-        } finally {
-            cursor.close();
-        }
-
+        dictTextView.setAdapter(adapter);
     }
 }
